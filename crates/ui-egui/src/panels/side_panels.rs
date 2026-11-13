@@ -1,7 +1,7 @@
 //! The side panels around the page: the Tools pane, the rail and the open side panel
 //! ([`crate::RightPanel`]), drawn with craft-ui task panes ([`craft_ui::panes`]).
 //!
-//! On the right, outermost first: the rail, the Tools pane when Preferences ▸ Tools panel side is
+//! On the right, outermost first: the rail, the Tools pane when Preferences Ã¢â€“Â¸ Tools panel side is
 //! Right, then the side panel, then the page. Panes are docked only; their widths are resizable
 //! and saved with the preferences.
 
@@ -52,7 +52,7 @@ impl Pane {
     }
 }
 
-/// Preferences ▸ Tools panel side.
+/// Preferences Ã¢â€“Â¸ Tools panel side.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ToolsSide {
@@ -415,6 +415,20 @@ fn keep_resize_edges_off_scrollbars(ui: &mut egui::Ui, host: egui::Id, open: &[P
     }
 }
 
+/// Keep a discoverable handle on the same edge when the Tools pane is collapsed.
+fn collapsed_tools(ui: &mut egui::Ui, panels: &SidePanels) -> bool {
+    use craft_ui::panes::{Rail, RailItem, RailRequest};
+    let t = crate::theme::Tokens::get(ui.ctx());
+    let icon = if panels.tools_on_right() { "chevron-left" } else { "chevron-right" };
+    let item = RailItem::new(Pane::Tools, crate::icons::source(icon), crate::i18n::t("Expand tools panel"));
+    let output = Rail::new(egui::Id::unique("collapsed-tools"))
+        .edge(panels.tools_edge())
+        .width(40.0)
+        .frame(egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin::symmetric(1, 8)))
+        .show(ui, &[item], None, |_| {});
+    matches!(output.request, Some(RailRequest::Open(Pane::Tools)))
+}
+
 /// Draws the rail and the open panes. Call after the top bars and before the central panel.
 pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
     if let Some(panel) = app.right {
@@ -427,6 +441,10 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
     // The expanded All tools view covers the panes.
     if app.mode == Mode::AllTools && app.all_tools_full {
         return;
+    }
+    if !app.left_open && app.mode != Mode::Read && collapsed_tools(ui, &app.side_panels) {
+        // Restore the selected tool and its width; do not switch modes or change documents.
+        app.left_open = true;
     }
     let open = open_panes(app);
     if open.is_empty() {
@@ -459,6 +477,35 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn collapsed_tools_can_be_reopened_repeatedly_on_either_edge() {
+        use egui_kittest::{Harness, kittest::Queryable};
+        for side in [ToolsSide::Left, ToolsSide::Right] {
+            let mut app = PdfCraftApp::new();
+            app.run_inline = true;
+            app.set_option("language", "en").unwrap();
+            let bytes = app.session.create_blank(300.0, 400.0, 2).unwrap();
+            app.open_bytes("sidebar-test.pdf", None, bytes.as_ref().clone()).unwrap();
+            app.select_tool("organize");
+            app.choose_right_panel(None);
+            app.side_panels.tools_side = side;
+            app.side_panels.tools_width = 340.0;
+            let mut h = Harness::builder().with_size(egui::vec2(1200.0, 800.0)).build_eframe(|_| app);
+            h.run_steps(4);
+            let active = h.state().active;
+            for _ in 0..3 {
+                command(h.state_mut(), false, &json!({"panel":"tools", "open":false})).unwrap();
+                h.run_steps(3);
+                h.get_by_label("Expand tools panel").click();
+                h.run_steps(3);
+                assert!(h.state().left_open);
+                assert_eq!(h.state().active, active);
+                assert!(matches!(h.state().left, crate::LeftPanel::Tool("organize")));
+                assert_eq!(h.state().side_panels.tools_width, 340.0);
+            }
+        }
+    }
 
     fn tabs(panels: &[&str]) -> Value {
         json!({"Tabs": {"panels": panels, "active": 0}})

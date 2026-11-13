@@ -26,3 +26,7 @@ Only the Windows portable build is qualified here. Legacy upstream installer rec
 ## Windows installer qualification — 2026-11-13
 
 The independent `packaging/harbor` Inno Setup recipe supersedes the portable-only packaging limitation above. The unsigned x64 setup passed an isolated install → same-version upgrade → uninstall round trip. The installed executable matched the staged binary's SHA-256 and an unowned synthetic document survived upgrade and uninstall. No personal documents were used. Setup registers per-user shortcuts, App Paths and an Installed apps entry; it does not forcibly close running apps or change file associations. Windows Search discovery remains unverified: `Get-StartApps` did not list the new shortcuts on the test machine.
+
+## Collapsed Tools sidebar — 2026-11-13
+
+Closing the Tools sidebar now leaves a narrow chevron rail on its configured edge. Reopening retains the chosen tool, active document and saved width. Read mode and the full All tools workspace retain their existing behavior. The real-app regression test `collapsed_tools_can_be_reopened_repeatedly_on_either_edge` passed three cycles on each edge; all nine side-panel tests and the 17 tab-window regressions passed. Scoped strict release clippy, formatting, dependency layers and asset checks passed. The old native executable was separately observed reporting zero reopen controls after closing Organize.
