@@ -22,3 +22,7 @@ Uses the pinned craft-print native Windows backend (in-process XPS/GDI, without 
 The native menu command was observed creating a second window. Automated raw-input drag tests passed; the manual drag gesture was not conclusively verified because Windows capture intermittently returned the foreground application rather than the requested window. Do not represent that as a passed manual drag test.
 
 Only the Windows portable build is qualified here. Legacy upstream installer recipes are not Harbor installers. No production release, installer, signing or updater distribution has been qualified. The manual update target is durtyrobbin/harbor-pdf, with automatic startup checking disabled.
+
+## Windows installer qualification — 2026-11-13
+
+The independent `packaging/harbor` Inno Setup recipe supersedes the portable-only packaging limitation above. The unsigned x64 setup passed an isolated install → same-version upgrade → uninstall round trip. The installed executable matched the staged binary's SHA-256 and an unowned synthetic document survived upgrade and uninstall. No personal documents were used. Setup registers per-user shortcuts, App Paths and an Installed apps entry; it does not forcibly close running apps or change file associations. Windows Search discovery remains unverified: `Get-StartApps` did not list the new shortcuts on the test machine.
