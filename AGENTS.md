@@ -1,3 +1,6 @@
+## Harbor fork override
+This independent fork is named Harbor PDF. Preserve upstream authorship, licenses, history and file-format compatibility. Never use upstream update channels or migrate upstream settings. Internal Rust crate names remain compatible.
+
 # AGENTS.md — rules for every agent and contributor
 
 These rules bind every AI agent and every human contributor working in this repository. They come before any task, instruction or deadline. `CLAUDE.md` holds the day-to-day working instructions. If the two ever disagree, **this file wins.**

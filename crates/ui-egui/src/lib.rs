@@ -13,9 +13,10 @@
 /// prompt shows both, and an AppImage's menu entry gets the icon.
 #[cfg(not(target_arch = "wasm32"))]
 pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
-    icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/ai.storyteller.pdfcraft.png")),
+    icon_png: Some(include_bytes!("../../../assets/harbor/icon.png")),
     accent: Some([0xb7, 0x02, 0x28]),
-    ..craft_update::suite::PDFCRAFT
+    developer: "Harbor contributors",
+    ..craft_update::app::App::new("harbor-pdf", "Harbor PDF", "Independent PDF workbench", "durtyrobbin/harbor-pdf")
 };
 
 use crate::control::Host as _;
@@ -678,4 +679,15 @@ pub struct PdfCraftApp {
     pub pending_full_screen: Option<DocId>,
     /// An absolute GoToR target waiting for approval, before any target-file I/O (#1364).
     pub pending_remote_link: Option<PendingRemoteLink>,
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod harbor_identity_tests {
+    #[test]
+    fn updates_cannot_replace_harbor_with_the_upstream_product() {
+        assert_eq!(super::UPDATE_APP.id, "harbor-pdf");
+        assert_eq!(super::UPDATE_APP.repo, "durtyrobbin/harbor-pdf");
+        assert!(super::UPDATE_APP.former_ids.is_empty());
+        assert!(super::UPDATE_APP.former_names.is_empty());
+    }
 }

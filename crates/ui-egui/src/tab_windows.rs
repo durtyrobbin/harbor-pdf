@@ -437,7 +437,7 @@ impl eframe::App for NativeWindows {
                 .app
                 .active
                 .and_then(|i| crate::canvas::tab_label(&window.app, i))
-                .map_or_else(|| "PdfCraft".to_owned(), |name| format!("{name} — PdfCraft"));
+                .map_or_else(|| "Harbor PDF".to_owned(), |name| format!("{name} — Harbor PDF"));
             let mut builder = egui::ViewportBuilder::default().with_title(title).with_inner_size([1100.0, 760.0]).with_min_inner_size([640.0, 420.0]);
             if let Some(position) = window.position.take() {
                 builder = builder.with_position(visible_position(position, ctx.pixels_per_point()));
